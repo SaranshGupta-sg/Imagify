@@ -6,6 +6,15 @@ import { motion } from "motion/react";
 // import { toast } from 'react-toastify'
 
 const Login = () => {
+  const [state, setState] = useState("Login");
+  const { setShowLogin } = useContext(AppContext)
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    }
+  }, [])
   return (
     <div className="fixed top-0 left-0 right-0 bottom-0 z-10 backdrop-blur-sm bg-black/30 flex justify-center items-center">
       <motion.form
@@ -17,21 +26,23 @@ const Login = () => {
         className="relative bg-white p-10 rounded-xl text-slate-500"
       >
         <h1 className="text-center text-2xl text-neutral-700 font-medium">
-          sign up
+          {state}
         </h1>
         <p className="text-sm">Welcome back! Please sign in to continue</p>
 
-        <div className="border px-6 py-2 flex items-center gap-2 rounded-full mt-5">
-          <img src={assets.user_icon} alt="" />
-          <input
-            // onChange={(e) => setName(e.target.value)}
-            value={name}
-            type="text"
-            className="outline-none text-sm"
-            placeholder="Full Name"
-            required
-          />
-        </div>
+        {state !== "Login" && (
+          <div className="border px-6 py-2 flex items-center gap-2 rounded-full mt-5">
+            <img src={assets.user_icon} alt="" />
+            <input
+            //   onChange={(e) => setName(e.target.value)}
+              value={name}
+              type="text"
+              className="outline-none text-sm"
+              placeholder="Full Name"
+              required
+            />
+          </div>
+        )}
 
         <div className="border px-6 py-2 flex items-center gap-2 rounded-full mt-4">
           <img src={assets.email_icon} alt="" />
@@ -62,7 +73,7 @@ const Login = () => {
         </p>
 
         <button className="bg-blue-600 w-full text-white py-2 rounded-full cursor-pointer">
-          {/* {state === "Login" ? "Login" : "Create Account"} */}
+          {state === "Login" ? "Login" : "Create Account"}
         </button>
 
         {state === "Login" ? (
@@ -70,7 +81,7 @@ const Login = () => {
             Don't have an account?{" "}
             <span
               className="text-blue-600 cursor-pointer"
-            //   onClick={() => setState("Sign up")}
+                onClick={() => setState("Sign up")}
             >
               Sign up
             </span>
@@ -80,7 +91,7 @@ const Login = () => {
             Already have an account?{" "}
             <span
               className="text-blue-600 cursor-pointer"
-              onClick={() => setState("Login")}
+                onClick={() => setState("Login")}
             >
               Login
             </span>
@@ -88,7 +99,7 @@ const Login = () => {
         )}
 
         <img
-          onClick={() => setShowLogin(false)}
+            onClick={() => setShowLogin(false)}
           src={assets.cross_icon}
           alt=""
           className="absolute top-5 right-5 cursor-pointer"

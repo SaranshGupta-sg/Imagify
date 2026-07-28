@@ -5,11 +5,13 @@ export const AppContext = createContext()
 
 const AppContextProvider = (props) => {
     const [user, setUser] = useState(null);
+    const [showLogin, setShowLogin] = useState(false);
+
 
      const navigate = useNavigate()
 
      const value = {
-        user, setUser
+        user, setUser, showLogin, setShowLogin,
     }
     // const value = {
     //     user, setUser, showLogin, setShowLogin, backendUrl, token, setToken, credit, setCredit, loadCreditsData, logout, generateImage
