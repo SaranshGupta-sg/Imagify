@@ -1,10 +1,13 @@
 import userModel from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import razorpay from "razorpay";
+import transactionModel from "../models/transactionModel.js";
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const userId = req.userId;
+    const { planId } = req.body;
 
     if (!name || !email || !password) {
       return res.json({ success: false, message: "Missing Details" });
@@ -73,4 +76,102 @@ const userCredits = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, userCredits };
+const razorpayInstance = new razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+const paymentRazorpay = async (req, res) => {
+  try {
+    // Debug logs
+    console.log("paymentRazorpay called");
+    console.log("UserId:", req.userId);
+    console.log("Body:", req.body);
+
+    // Get userId from auth middleware
+    const userId = req.userId;
+    const { planId } = req.body;
+
+    if (!userId || !planId) {
+      return res.json({
+        success: false,
+        message: "Missing Details",
+      });
+    }
+
+    const userData = await userModel.findById(userId);
+
+    if (!userData) {
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    let credits = 0;
+    let amount = 0;
+    let plan = "";
+
+    switch (planId) {
+      case "Basic":
+        plan = "Basic";
+        credits = 100;
+        amount = 10;
+        break;
+
+      case "Advanced":
+        plan = "Advanced";
+        credits = 500;
+        amount = 50;
+        break;
+
+      case "Business":
+        plan = "Business";
+        credits = 5000;
+        amount = 250;
+        break;
+
+      default:
+        return res.json({
+          success: false,
+          message: "Plan not found",
+        });
+    }
+
+    const newTransaction = await transactionModel.create({
+      userId,
+      plan,
+      amount,
+      credits,
+      date: Date.now(),
+    });
+
+    const options = {
+      amount: amount * 100, // paisa
+      currency: process.env.CURRENCY,
+      receipt: newTransaction._id.toString(),
+    };
+
+    console.log("Razorpay Options:", options);
+
+    // Promise syntax (recommended)
+    const order = await razorpayInstance.orders.create(options);
+
+    console.log("Order Created:", order);
+
+    res.json({
+      success: true,
+      order,
+    });
+
+  } catch (error) {
+    console.log("Razorpay Error:", error);
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export { registerUser, loginUser, userCredits, paymentRazorpay };
