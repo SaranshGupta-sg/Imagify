@@ -6,33 +6,51 @@ import transactionModel from "../models/transactionModel.js";
 
 const registerUser = async (req, res) => {
   try {
-    const userId = req.userId;
-    const { planId } = req.body;
+    const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.json({ success: false, message: "Missing Details" });
+      return res.json({
+        success: false,
+        message: "Missing Details",
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await userModel.findOne({ email });
+
+    if (existingUser) {
+      return res.json({
+        success: false,
+        message: "User already exists",
+      });
     }
 
     const salt = await bcrypt.genSalt(10);
 
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const userData = {
+    const user = await userModel.create({
       name,
       email,
       password: hashedPassword,
-    };
-
-    const newUser = new userModel(userData);
-
-    const user = await newUser.save();
+    });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
-    res.json({ success: true, token, user: { name: user.name } });
+    res.json({
+      success: true,
+      token,
+      user: {
+        name: user.name,
+      },
+    });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -208,4 +226,10 @@ const verifyRazorpay = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, userCredits, paymentRazorpay, verifyRazorpay };
+export {
+  registerUser,
+  loginUser,
+  userCredits,
+  paymentRazorpay,
+  verifyRazorpay,
+};
