@@ -12,7 +12,12 @@ const PORT = process.env.PORT || 4000;
 const app = express();
 
 // ✅ CORS (ONLY ONCE)
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://imagify-client-tdaj.onrender.com",
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 await connectDB();
